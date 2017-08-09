@@ -2,14 +2,11 @@ const {PerspectiveCamera, Scene, AmbientLight, DirectionalLight, Loader, WebGLRe
 const MTLLoader = require('./javascripts/lib/three-loader/MTLLoader.js');
 const DDSLoader = require('./javascripts/lib/three-loader/DDSLoader.js');
 const OBJLoader = require('./javascripts/lib/three-loader/OBJLoader.js');
-let container, stats;
 
 let camera, scene, renderer;
-
-let mouseX = 0, mouseY = 0;
-
-let windowHalfX = window.innerWidth / 2;
-let windowHalfY = window.innerHeight / 2;
+let timefleg = 0;
+const pi = Math.PI / 180;
+const dis = 300;
 
 
 init();
@@ -18,73 +15,53 @@ animate();
 
 function init() {
 
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
 
     camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-    camera.position.z = 250;
+    camera.position.z = dis;
 
     // scene
 
     scene = new Scene();
 
-    var ambient = new AmbientLight( 0x444444 );
-    scene.add( ambient );
+    scene.add( new AmbientLight( 0x444444 ) );
 
-    var directionalLight = new DirectionalLight( 0xffeedd );
+    const directionalLight = new DirectionalLight( 0xffeedd );
     directionalLight.position.set( 0, 0, 1 ).normalize();
     scene.add( directionalLight );
 
     // model
 
-    var onProgress = function ( xhr ) {
-        if ( xhr.lengthComputable ) {
-            var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log( Math.round(percentComplete, 2) + '% downloaded' );
-        }
-    };
-
-    var onError = function ( xhr ) { };
-
     Loader.Handlers.add( /\.dds$/i, new DDSLoader() );
 
-    var mtlLoader = new MTLLoader();
+    const mtlLoader = new MTLLoader();
     mtlLoader.setPath( 'file/' );
-    mtlLoader.load( 'male02_dds.mtl', function( materials ) {
+    mtlLoader.load( 'male02_dds.mtl', materials => {
 
         materials.preload();
 
-        var objLoader = new OBJLoader();
+        const objLoader = new OBJLoader();
         objLoader.setMaterials( materials );
         objLoader.setPath( 'file/' );
-        objLoader.load( 'male02.obj', function ( object ) {
+        objLoader.load( 'male02.obj', object => {
 
             object.position.y = - 95;
             scene.add( object );
 
-        }, onProgress, onError );
+        } );
 
     });
 
-    //
-
+    //renderer
     renderer = new WebGLRenderer();
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    container.appendChild( renderer.domElement );
-
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
-    //
+    document.getElementById( 'container' ).appendChild( renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize, false );
 
 }
 
 function onWindowResize() {
-
-    windowHalfX = window.innerWidth / 2;
-    windowHalfY = window.innerHeight / 2;
 
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -108,12 +85,12 @@ function animate() {
     render();
 
 }
-
 function render() {
-
-    camera.position.x += ( mouseX - camera.position.x ) * .05;
-    camera.position.y += ( - mouseY - camera.position.y ) * .05;
-
+    timefleg++;
+    timefleg = timefleg % 360;
+    const angle = pi * timefleg;
+    camera.position.x = Math.cos(angle) * dis;
+    camera.position.z = Math.sin(angle) * dis;
     camera.lookAt( scene.position );
 
     renderer.render( scene, camera );
