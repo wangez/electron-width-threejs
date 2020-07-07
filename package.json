@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/wangez/electron-width-threejs#readme",
   "devDependencies": {
-    "electron": "^1.6.11",
+    "electron": "^9.1.0",
     "three": "^0.86.0"
   }
 }
